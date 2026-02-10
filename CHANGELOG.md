@@ -2,6 +2,8 @@
 
 Release 5.12.0 (unreleased):
  - Remove code elements deprecated in 5.11.0
+ - OAuth 2.0:
+   - In `SimpleAuthorizationService` implmeent [JWT Response for OAuth Token Introspection](https://datatracker.ietf.org/doc/html/rfc9701/)
 
 Release 5.11.0:
  - Digital Credentials API:
