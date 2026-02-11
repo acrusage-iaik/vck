@@ -2,6 +2,12 @@
 
 Release 5.12.0 (unreleased):
  - Remove code elements deprecated in 5.11.0
+ - Add method `loadUnitAttestation` to `WalletService`
+ - Add data class `LoadUnitAttestationInput` to `WalletService`
+ - Deprecate methods `loadClientAttestationJwt` and `signClientAttestationPop`, point to `loadInstanceAttestation` and `loadInstanceAttestationPop`
+ - Add member `statusListTokenResolver` to `ProofValidator`
+ - Add member `statusListTokenResolver` to `CredentialIssuer`
+ - Add member `preferredTtl` to `KeyAttestationRequired`
 
 Release 5.11.0:
  - Digital Credentials API:

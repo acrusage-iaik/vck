@@ -18,6 +18,7 @@ import at.asitplus.openid.TokenRequestParameters
 import at.asitplus.openid.TokenResponseParameters
 import at.asitplus.signum.indispensable.josef.JsonWebToken
 import at.asitplus.signum.indispensable.josef.JwsAlgorithm
+import at.asitplus.signum.indispensable.josef.JwsSigned
 import at.asitplus.wallet.lib.agent.EphemeralKeyWithoutCert
 import at.asitplus.wallet.lib.agent.RandomSource
 import at.asitplus.wallet.lib.data.vckJsonSerializer
@@ -75,8 +76,10 @@ class OAuth2KtorClient(
      * the key behind [signClientAttestationPop], see
      * [OAuth 2.0 Attestation-Based Client Authentication](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-04.html)
      */
+    @Deprecated("Removed, use new loadInstanceAttestation function instead")
     private val loadClientAttestationJwt: (suspend () -> String)? = null,
     /** Used for authenticating the client at the authorization server with client attestation. */
+    @Deprecated("Removed, use new loadInstanceAttestationPop function instead")
     private val signClientAttestationPop: SignJwtFun<JsonWebToken>? =
         SignJwt(EphemeralKeyWithoutCert(), JwsHeaderNone()),
     /** Used to calculate DPoP, i.e. the key the access token and refresh token gets bound to. */
@@ -90,6 +93,11 @@ class OAuth2KtorClient(
     val oAuth2Client: OAuth2Client,
     /** Source for random bytes, i.e., nonces for proof-of-possession of key material for sender-constrained tokens. */
     private val randomSource: RandomSource = RandomSource.Secure,
+    
+    /** Returns a new instance attestation to validate the app against an authorization server. */
+    val loadInstanceAttestation: (suspend () -> JwsSigned<JsonWebToken>)? = null,
+    /** Returns a proof of possession for an instance attestation */
+    val loadInstanceAttestationPop: (suspend () -> JwsSigned<JsonWebToken>)? = null,
 ) {
     /**
      * Stores the latest DPoP nonce per origin. RFC 9449 requires using only the most recent nonce
@@ -480,18 +488,8 @@ class OAuth2KtorClient(
         httpMethod: HttpMethod,
         useDpop: Boolean,
     ): HttpRequestBuilder.() -> Unit {
-        val (clientAttJwt, clientAttPop) = oauthMetadata.useClientAuth().takeIf { it }?.let {
-            loadClientAttestationJwt?.invoke()?.let { clientAttestationJwt ->
-                clientAttestationJwt to signClientAttestationPop?.let {
-                    BuildClientAttestationPoPJwt(
-                        signClientAttestationPop,
-                        clientId = oAuth2Client.clientId,
-                        audience = popAudience,
-                        lifetime = 10.minutes,
-                    ).serialize()
-                }
-            }
-        } ?: (null to null)
+        val clientAttJwt = loadInstanceAttestation?.let { it().serialize() }
+        val clientAttPop = loadInstanceAttestationPop?.let { it().serialize() }
 
         val dpopHeader = oauthMetadata.hasMatchingDpopAlgorithm().takeIf { it && useDpop }?.let {
             BuildDPoPHeader(
