@@ -50,7 +50,7 @@ class ProofValidator(
     private val requireKeyAttestation: Boolean = false,
     /** Used to provide challenges to clients to include in proof of possession of key material. */
     private val clientNonceService: NonceService = DefaultNonceService(),
-
+    /** Used to verify the validity of a unit attestation */
     private val statusListTokenResolver: StatusListTokenResolver
 ) {
 

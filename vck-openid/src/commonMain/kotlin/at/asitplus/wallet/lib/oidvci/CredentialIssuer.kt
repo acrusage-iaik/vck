@@ -28,8 +28,8 @@ import io.github.aakira.napier.Napier
  * 1.0 from 2025-09-16.
  */
 class CredentialIssuer(
+    /** Used to verify the validity of a unit attestation */
     private val statusListTokenResolver: StatusListTokenResolver,
-
     /** Used to get the user data, and access tokens. */
     private val authorizationService: OAuth2AuthorizationServerAdapter,
     /** Used to actually issue the credential. */
